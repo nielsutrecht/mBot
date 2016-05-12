@@ -108,8 +108,10 @@ int LineFollowFlag=0;
 void setup()
 {
   Serial.begin(115200);
+  Serial.println("Game On JDriven!");
   Stop();
   disco();
+  delay(1000);
 }
 
 void  disco()
@@ -129,37 +131,24 @@ void  disco()
 
   buzzer.noTone();
 }
-
-
-void writeBuffer(int index,unsigned char c){
-  buffer[index]=c;
-}
-void writeHead(){
-  writeSerial(0xff);
-  writeSerial(0x55);
-}
-void writeEnd(){
- Serial.println(); 
-}
-void writeSerial(unsigned char c){
- Serial.write(c);
-}
-void readSerial(){
-  isAvailable = false;
-  if(Serial.available()>0){
-    isAvailable = true;
-    serialRead = Serial.read();
-  }
-}
-
-         
+       
 void loop()
 {
 
-  Serial.println("Hello JDriven!");
-  Stop();
-  delay(1000);
+  // motor control
+  motorDemo();
+
+  // distance sensor
+  distanceDemo();
+
+  // line follow sensor
+  lineFollowDemo();
   
+}
+
+
+void motorDemo() 
+{
   Serial.print("Move Speed: ");
   Serial.println(moveSpeed);
   
@@ -179,8 +168,8 @@ void loop()
   TurnRight();
   delay(1000);
 
-  Serial.println("ChangeSpeed to 10 and Forward");
-  ChangeSpeed(10);
+  Serial.println("ChangeSpeed to 100 and Forward");
+  ChangeSpeed(100);
   Forward();
   delay(1000);
 
@@ -188,16 +177,6 @@ void loop()
   ChangeSpeed(250);
   Forward();
   delay(1000);
-
-
-  // TODO distance sensor
-  distanceDemo();
-
-  // TODO line follow sensor
-  lineFollowDemo();
-  
-
-
 }
 
 void Forward()
@@ -237,60 +216,46 @@ void ChangeSpeed(int spd)
 void distanceDemo()
 {
   uint8_t d = ultr.distanceCm(50);
-  static long time = millis();
-  randomSeed(analogRead(6));
-  uint8_t randNumber = random(2);
-  if (d > 15 || d == 0)Forward();
-  else if (d > 10) {
-    switch (randNumber)
-    {
-      case 0:
-        TurnLeft();
-        delay(200);
-        break;
-      case 1:
-        TurnRight();
-        delay(200);
-        break;
-    }
-  }
-  else
-  {
-    Backward();
-    delay(400);
-  }
-  delay(100);
+  Serial.print("Distance: ");
+  Serial.println(d);
+  delay(500);
 }
 
 void lineFollowDemo()
 {
-  uint8_t val;
-  val = line.readSensors();
-  if(moveSpeed >230)moveSpeed=230;
+  uint8_t val = line.readSensors();
+
+  bool leftIn = false;
+  bool rightIn = false;
+  
   switch (val)
   {
     case S1_IN_S2_IN:
-      Forward();
-      LineFollowFlag=10;
+      leftIn = true;
+      rightIn = true;
       break;
 
     case S1_IN_S2_OUT:
-       Forward();
-      if (LineFollowFlag>1) LineFollowFlag--;
+      leftIn  = true;
+      rightIn = false;
       break;
 
     case S1_OUT_S2_IN:
-      Forward();
-      if (LineFollowFlag<20) LineFollowFlag++;
+      leftIn = false;
+      rightIn = true;
       break;
 
     case S1_OUT_S2_OUT:
-      if(LineFollowFlag==10) Backward();
-      if(LineFollowFlag<10) TurnLeft();
-      if(LineFollowFlag>10) TurnRight();
+      leftIn = false;
+      rightIn = false;
       break;
   }
-//  delay(50);
+  Serial.print("LeftIn: ");
+  Serial.println(leftIn);
+  Serial.print("RightIn: ");
+  Serial.println(rightIn);
+  
+  delay(500);
 }
 
 
