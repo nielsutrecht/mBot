@@ -48,43 +48,8 @@ int factor = 23;
 #define RUN_L 0x01<<2
 #define RUN_R 0x01<<3
 #define STOP 0
-uint8_t motor_sta = STOP;
-enum
-{
-  MODE_A,
-  MODE_B,
-  MODE_C
-};
 
-typedef struct MeModule
-{
-    int device;
-    int port;
-    int slot;
-    int pin;
-    int index;
-    float values[3];
-} MeModule;
-
-union{
-    byte byteVal[4];
-    float floatVal;
-    long longVal;
-}val;
-
-union{
-  byte byteVal[8];
-  double doubleVal;
-}valDouble;
-
-union{
-  byte byteVal[2];
-  short shortVal;
-}valShort;
-
-MeModule modules[12];
 int analogs[8]={A0,A1,A2,A3,A4,A5,A6,A7};
-uint8_t mode = MODE_A;
 
 boolean isAvailable = false;
 int len = 52;
