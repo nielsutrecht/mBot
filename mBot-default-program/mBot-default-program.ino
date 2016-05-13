@@ -16,8 +16,12 @@ MeDCMotor MotorR(M2);
 MePort generalDevice;
 Servo servo;
 
-int moveSpeed = 200;
+int defaultSpeed = 200;
 int minSpeed = 48;
+int maxSpeed = 250;
+
+int moveSpeed = defaultSpeed;
+
 int factor = 23;
 
 #define NTD1 294
@@ -153,48 +157,53 @@ void motorDemo()
   Serial.println(moveSpeed);
   
   Serial.println("Forward!");
-  Forward();
+  forward();
   delay(1000);
   
   Serial.println("Backward!");
-  Backward();
+  backward();
   delay(1000);
   
   Serial.println("TurnLeft!");
-  TurnLeft();
+  turnLeft();
   delay(1000);
   
   Serial.println("TurnRight!");
-  TurnRight();
+  turnRight();
   delay(1000);
 
-  Serial.println("ChangeSpeed to 100 and Forward");
-  ChangeSpeed(100);
-  Forward();
+  Serial.println("ChangeSpeed to minSpeed and Forward");
+  changeSpeed(minSpeed);
+  forward();
   delay(1000);
 
-  Serial.println("ChangeSpeed to 250 and Forward");
-  ChangeSpeed(250);
-  Forward();
+  Serial.println("ChangeSpeed to maxSpeed and Forward");
+  changeSpeed(maxSpeed);
+  forward();
+  delay(1000);
+
+  Serial.println("ChangeSpeed to maxSpeed and Forward");
+  changeSpeed(maxSpeed);
+  forward();
   delay(1000);
 }
 
-void Forward()
+void forward()
 {
   MotorL.run(-moveSpeed);
   MotorR.run(moveSpeed);
 }
-void Backward()
+void backward()
 {
   MotorL.run(moveSpeed); 
   MotorR.run(-moveSpeed);
 }
-void TurnLeft()
+void turnLeft()
 {
   MotorL.run(-moveSpeed/10);
   MotorR.run(moveSpeed);
 }
-void TurnRight()
+void turnRight()
 {
   MotorL.run(-moveSpeed);
   MotorR.run(moveSpeed/10);
@@ -206,7 +215,7 @@ void Stop()
   MotorR.run(0);
 }
 
-void ChangeSpeed(int spd)
+void changeSpeed(int spd)
 {
   buzzer.tone(NTD5, 300); 
   moveSpeed = spd;
