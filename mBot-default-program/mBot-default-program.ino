@@ -11,18 +11,24 @@ MeDCMotor MotorL(M1);
 MeDCMotor MotorR(M2);
 MePort generalDevice;
 
+#define ST_TRACK 0
+#define  ST_CROSS 1
+#define  ST_TURN 2
+#define  ST_SCAN 3
+#define  ST_DONE 999
+
 int defaultSpeed = 100;
 int minSpeed = 48;
 int maxSpeed = 250;
 int state = 0;        //0: tracking line, 1 = turning right, 2 = scanning left
 
 int moveSpeed = defaultSpeed;
+int reverseSpeed = 150;
 
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Team Gerard!");
-  delay(1000);
   rgb.setNumber(16);
   rgb.clear();
 }
@@ -30,17 +36,19 @@ void setup()
 void loop()
 {
   switch(state) {
-    case 0: //Tracking
+    case ST_TRACK: //Tracking
       track();
       break;
-    case 1: //Turning
+    case ST_CROSS: 
+      cross();
+      break;
+    case ST_TURN: //Turning
       turn();
       break;
-    case 2:
+    case ST_SCAN:
       scan();
       break;
   }
-  adjustHeading();
 }
 
 void track()
@@ -66,17 +74,109 @@ void track()
     case S1_OUT_S2_IN: //Left outside, move right a bit
       MotorL.run(-moveSpeed);
       MotorR.run(minSpeed);
-      rgb.setColor(0, 0, 10);
+      rgb.setColor(0, 10, 0);
+      break;
+
+    case S1_OUT_S2_OUT: //Rotate right
+      state = ST_CROSS;  //Start turning
+      break;
+  }
+}
+
+void cross() {
+  uint8_t val = line.readSensors();
+  rgb.setColor(10, 0, 10);
+
+  //S1 = left, S2 = right
+  switch (val)
+  {
+    case S1_IN_S2_IN: //Both inside, turn!
+      //delay(200);
+      MotorL.run(-moveSpeed);
+      MotorR.run(-reverseSpeed);
+      //delay(200);
+      state = ST_TURN;
+      break;
+
+    case S1_IN_S2_OUT: //Right outside, move right a bit
+      MotorL.run(-moveSpeed);
+      MotorR.run(minSpeed);
+      break;
+
+    case S1_OUT_S2_IN: //Left outside, move left a bit
+      MotorL.run(-minSpeed);
+      MotorR.run(moveSpeed);
       break;
 
     case S1_OUT_S2_OUT: //Rotate right
       MotorL.run(-moveSpeed);
-      MotorR.run(-moveSpeed);
+      MotorR.run(moveSpeed);
+      break;
+  }
+}
+
+void waitUntil(uint8_t condition) {
+  rgb.setColor(16, 16, 0);
+  while(true) {
+    uint8_t val = line.readSensors();
+    if(val == condition) {
+      break;
+    }
+  }
+}
+
+void turn() {
+  uint8_t val = line.readSensors();
+  rgb.setColor(10, 0, 0);
+
+  //S1 = left, S2 = right
+  switch (val)
+  {
+    case S1_IN_S2_IN: //Both inside, forward!
+    //case S1_IN_S2_OUT: //Right outside, move left a bit
+    case S1_OUT_S2_IN: //Left outside, move right a bit
+      if(facingWall()) {
+        state = ST_SCAN;
+      }
+      else {
+        state = ST_TRACK;
+      }
+      break;
+
+    case S1_OUT_S2_OUT: //Keep rotating right
+      MotorL.run(-moveSpeed);
+      MotorR.run(-reverseSpeed);
+      break;
+  }
+}
+
+void scan() {
+  uint8_t val = line.readSensors();
+  rgb.setColor(10, 10, 10);
+  //S1 = left, S2 = right
+  switch (val)
+  {
+    case S1_IN_S2_IN: //Both inside, forward!
+    case S1_IN_S2_OUT: //Right outside, move left a bit
+    case S1_OUT_S2_IN: //Left outside, move right a bit
+      if(!facingWall()) {
+        state = ST_TRACK;
+      }
+      break;
+
+    case S1_OUT_S2_OUT: //Keep rotating left
+      MotorL.run(moveSpeed);
+      MotorR.run(moveSpeed);
       rgb.setColor(10, 0, 0);
       break;
   }
 }
 
+boolean facingWall() {
+  uint8_t d = ultr.distanceCm(50);
+
+  return d > 0 && d <= 50;
+}
 
 void  disco()
 {
