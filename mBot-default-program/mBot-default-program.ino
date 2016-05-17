@@ -11,34 +11,71 @@ MeDCMotor MotorL(M1);
 MeDCMotor MotorR(M2);
 MePort generalDevice;
 
-int defaultSpeed = 200;
+int defaultSpeed = 100;
 int minSpeed = 48;
 int maxSpeed = 250;
+int state = 0;        //0: tracking line, 1 = turning right, 2 = scanning left
 
 int moveSpeed = defaultSpeed;
 
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Game On JDriven!");
+  Serial.println("Team Gerard!");
   delay(1000);
+  rgb.setNumber(16);
+  rgb.clear();
 }
 
 void loop()
 {
-  // disco
-  disco();
-
-  // motor control
-  motorDemo();
-
-  // distance sensor
-  distanceDemo();
-
-  // line follow sensor
-  lineFollowDemo();
+  switch(state) {
+    case 0: //Tracking
+      track();
+      break;
+    case 1: //Turning
+      turn();
+      break;
+    case 2:
+      scan();
+      break;
+  }
+  adjustHeading();
 }
 
+void track()
+{ 
+  uint8_t val = line.readSensors();
+
+  //S1 = left, S2 = right
+
+  switch (val)
+  {
+    case S1_IN_S2_IN: //Both inside, forward!
+      MotorL.run(-moveSpeed);
+      MotorR.run(moveSpeed);
+      rgb.setColor(0, 0, 0);
+      break;
+
+    case S1_IN_S2_OUT: //Right outside, move left a bit
+      MotorL.run(-minSpeed);
+      MotorR.run(moveSpeed);
+      rgb.setColor(0, 10, 0);
+      break;
+
+    case S1_OUT_S2_IN: //Left outside, move right a bit
+      MotorL.run(-moveSpeed);
+      MotorR.run(minSpeed);
+      rgb.setColor(0, 0, 10);
+      break;
+
+    case S1_OUT_S2_OUT: //Rotate right
+      MotorL.run(-moveSpeed);
+      MotorR.run(-moveSpeed);
+      rgb.setColor(10, 0, 0);
+      break;
+  }
+}
 
 
 void  disco()
@@ -46,17 +83,17 @@ void  disco()
   rgb.setNumber(16);
   rgb.clear();
   rgb.setColor(10, 0, 0);
-  buzzer.tone(294, 300); 
+  //buzzer.tone(294, 300); 
   delay(30);
   rgb.setColor(0, 10, 0);
-  buzzer.tone(330, 300);
+  //buzzer.tone(330, 300);
   delay(30);
   rgb.setColor(0, 0, 10);
-  buzzer.tone(350, 300);
+  //buzzer.tone(350, 300);
   delay(30);
   rgb.clear();
 
-  buzzer.noTone();
+  //buzzer.noTone();
 }
        
 void motorDemo() 
