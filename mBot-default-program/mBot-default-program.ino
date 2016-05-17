@@ -20,7 +20,7 @@ int moveSpeed = defaultSpeed;
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Game On JDriven!");
+  Serial.println("Maak me gek!");
   delay(1000);
 }
 
@@ -46,7 +46,7 @@ void  disco()
   rgb.setNumber(16);
   rgb.clear();
   rgb.setColor(10, 0, 0);
-  buzzer.tone(294, 300); 
+  buzzer.tone(294, 300);
   delay(30);
   rgb.setColor(0, 10, 0);
   buzzer.tone(330, 300);
@@ -58,24 +58,24 @@ void  disco()
 
   buzzer.noTone();
 }
-       
-void motorDemo() 
+
+void motorDemo()
 {
   Serial.print("Move Speed: ");
   Serial.println(moveSpeed);
-  
+
   Serial.println("Forward!");
   forward();
   delay(1000);
-  
+
   Serial.println("Backward!");
   backward();
   delay(1000);
-  
+
   Serial.println("TurnLeft!");
   turnLeft();
   delay(1000);
-  
+
   Serial.println("TurnRight!");
   turnRight();
   delay(1000);
@@ -106,7 +106,7 @@ void forward()
 }
 void backward()
 {
-  MotorL.run(moveSpeed); 
+  MotorL.run(moveSpeed);
   MotorR.run(-moveSpeed);
 }
 void turnLeft()
@@ -128,7 +128,7 @@ void halt()
 
 void changeSpeed(int spd)
 {
-  buzzer.tone(441, 300); 
+  buzzer.tone(441, 300);
   moveSpeed = spd;
 }
 
@@ -146,7 +146,7 @@ void lineFollowDemo()
 
   bool leftIn = false;
   bool rightIn = false;
-  
+
   switch (val)
   {
     case S1_IN_S2_IN:
@@ -174,5 +174,3 @@ void lineFollowDemo()
   Serial.print("RightIn: ");
   Serial.println(rightIn);
 }
-
-
