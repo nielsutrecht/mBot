@@ -20,23 +20,25 @@ int moveSpeed = defaultSpeed;
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Game On JDriven!");
+  Serial.println("Game On Team Gerard!");
   delay(1000);
 }
 
 void loop()
 {
   // disco
-  disco();
+  //disco();
 
   // motor control
-  motorDemo();
+  //motorDemo();
 
   // distance sensor
   distanceDemo();
 
   // line follow sensor
   lineFollowDemo();
+
+  delay(500);
 }
 
 
@@ -46,17 +48,17 @@ void  disco()
   rgb.setNumber(16);
   rgb.clear();
   rgb.setColor(10, 0, 0);
-  buzzer.tone(294, 300); 
+  //buzzer.tone(294, 300); 
   delay(30);
   rgb.setColor(0, 10, 0);
-  buzzer.tone(330, 300);
+  //buzzer.tone(330, 300);
   delay(30);
   rgb.setColor(0, 0, 10);
-  buzzer.tone(350, 300);
+  //buzzer.tone(350, 300);
   delay(30);
   rgb.clear();
 
-  buzzer.noTone();
+  //buzzer.noTone();
 }
        
 void motorDemo() 
