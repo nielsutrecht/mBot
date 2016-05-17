@@ -17,6 +17,8 @@ int maxSpeed = 250;
 
 int moveSpeed = defaultSpeed;
 
+int motorSpeedUnit = 25;
+
 void setup()
 {
   Serial.begin(115200);
@@ -26,155 +28,53 @@ void setup()
 
 void loop()
 {
-  // disco
-  //disco();
+    // are we there yet?
+  bool handled = hasSunImploded();
 
-  // motor control
-  //motorDemo();
+  // - wall too close
+  if (!handled) {
+      handled = handleWallClose();
+  }
+  //  - change in feet sensors
+  handled = handleFeetSensors();
 
-  // distance sensor
-  distanceDemo();
+  if (!handled) {
+    stillGoForward();
+  }
 
-  // line follow sensor
-  lineFollowDemo();
-
-  delay(500);
 }
 
+boolean hasSunImploded() {
+    // read light sensor
+    return false; //(lightSensor detected dark)
+}
 
+boolean handleWallClose() {
+  uint8_t d = ultr.distanceCm(50);
+  if (d < 30) {
+    go(10, 2, 100);
+    halt();
+    return true;
+  }
+  return false;
+}
 
-void  disco()
-{
-  rgb.setNumber(16);
+boolean stillGoForward() {
+    go(10, 10, 100);
+    halt();
+    return true;
+}
+
+void go(int motorLeftSpeed, int motorRightSpeed, int runMotorFor) {
   rgb.clear();
-  rgb.setColor(10, 0, 0);
-  //buzzer.tone(294, 300); 
-  delay(30);
-  rgb.setColor(0, 10, 0);
-  //buzzer.tone(330, 300);
-  delay(30);
-  rgb.setColor(0, 0, 10);
-  //buzzer.tone(350, 300);
-  delay(30);
-  rgb.clear();
-
-  //buzzer.noTone();
-}
-       
-void motorDemo() 
-{
-  Serial.print("Move Speed: ");
-  Serial.println(moveSpeed);
-  
-  Serial.println("Forward!");
-  forward();
-  delay(1000);
-  
-  Serial.println("Backward!");
-  backward();
-  delay(1000);
-  
-  Serial.println("TurnLeft!");
-  turnLeft();
-  delay(1000);
-  
-  Serial.println("TurnRight!");
-  turnRight();
-  delay(1000);
-
-  Serial.println("ChangeSpeed to minSpeed and Forward");
-  changeSpeed(minSpeed);
-  forward();
-  delay(1000);
-
-  Serial.println("ChangeSpeed to maxSpeed and Forward");
-  changeSpeed(maxSpeed);
-  forward();
-  delay(1000);
-
-  Serial.println("ChangeSpeed to maxSpeed and Forward");
-  changeSpeed(maxSpeed);
-  forward();
-  delay(1000);
-
-  Serial.println("Halt");
-  halt();
+  MotorL.run(motorSpeedUnit * motorLeftSpeed);
+  MotorR.run(motorSpeedUnit * motorRightSpeed);
+  delay(runMotorFor);
 }
 
-void forward()
-{
-  MotorL.run(-moveSpeed);
-  MotorR.run(moveSpeed);
-}
-void backward()
-{
-  MotorL.run(moveSpeed); 
-  MotorR.run(-moveSpeed);
-}
-void turnLeft()
-{
-  MotorL.run(-moveSpeed/10);
-  MotorR.run(moveSpeed);
-}
-void turnRight()
-{
-  MotorL.run(-moveSpeed);
-  MotorR.run(moveSpeed/10);
-}
 void halt()
 {
   rgb.clear();
   MotorL.run(0);
   MotorR.run(0);
 }
-
-void changeSpeed(int spd)
-{
-  buzzer.tone(441, 300); 
-  moveSpeed = spd;
-}
-
-
-void distanceDemo()
-{
-  uint8_t d = ultr.distanceCm(50);
-  Serial.print("Distance: ");
-  Serial.println(d);
-}
-
-void lineFollowDemo()
-{
-  uint8_t val = line.readSensors();
-
-  bool leftIn = false;
-  bool rightIn = false;
-  
-  switch (val)
-  {
-    case S1_IN_S2_IN:
-      leftIn = true;
-      rightIn = true;
-      break;
-
-    case S1_IN_S2_OUT:
-      leftIn  = true;
-      rightIn = false;
-      break;
-
-    case S1_OUT_S2_IN:
-      leftIn = false;
-      rightIn = true;
-      break;
-
-    case S1_OUT_S2_OUT:
-      leftIn = false;
-      rightIn = false;
-      break;
-  }
-  Serial.print("LeftIn: ");
-  Serial.println(leftIn);
-  Serial.print("RightIn: ");
-  Serial.println(rightIn);
-}
-
-
